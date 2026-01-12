@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DynamicConfig\Command;
+namespace DbConfig\Command;
 
 use Cake\Command\Command;
 use Cake\Console\Arguments;
@@ -13,7 +13,7 @@ class PublishCommand extends Command
 {
     private bool $overwrite = false;
 
-    private const command = 'dynamicconfig publish';
+    private const command = 'dbconfig publish';
 
     /**
      * The name of this command.
@@ -85,11 +85,11 @@ class PublishCommand extends Command
     public function publish($file, ConsoleIo $io)
     {
         $source = dirname(__DIR__, 2) . DS . 'templates' . DS . $file;
-        $target = ROOT . DS . 'templates' . DS . 'plugin' . DS . 'DynamicConfig' . DS . $file;
+        $target = ROOT . DS . 'templates' . DS . 'plugin' . DS . 'DbConfig' . DS . $file;
 
         if (!file_exists($source)) {
             $io->err("Source template not found: {$source}");
-            return;   // static::CODE_ERROR;
+            return;
         }
 
         if (!is_dir(dirname($target))) {
@@ -100,7 +100,7 @@ class PublishCommand extends Command
             $answer = strtolower(trim($io->ask("Template already exists at: {$target}\nOverwrite? (y/n/a/yes/no/all)", 'n')));
             if (!in_array(strtolower($answer), ['y', 'yes', 'a', 'all'], true)) {
                 $io->out("Publish cancelled.");
-                return;   // static::CODE_SUCCESS;
+                return;
             }
 
             if (in_array($answer, ['a', 'all'])) {
@@ -110,10 +110,7 @@ class PublishCommand extends Command
 
         if (copy($source, $target)) {
             $io->out("Published Templates to: {$target}");
-            return;   // static::CODE_SUCCESS;
+            return;
         }
-
-        // $io->err("Failed to publish view.");
-        // return;   // static::CODE_ERROR;
     }
 }

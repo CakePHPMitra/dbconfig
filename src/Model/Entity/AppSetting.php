@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace DynamicConfig\Model\Entity;
+namespace DbConfig\Model\Entity;
 
 use Cake\ORM\Entity;
 

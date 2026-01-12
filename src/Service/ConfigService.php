@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DynamicConfig\Service;
+namespace DbConfig\Service;
 
 use Cake\Core\Configure;
 use Cake\ORM\TableRegistry;
@@ -12,7 +12,7 @@ class ConfigService
 {
     public static function reload(): void
     {
-        $AppSettings = TableRegistry::getTableLocator()->get('DynamicConfig.AppSettings');
+        $AppSettings = TableRegistry::getTableLocator()->get('DbConfig.AppSettings');
         $settings = $AppSettings->find()->select(['config_key', 'value', 'type'])->all();
 
         foreach ($settings as $setting) {

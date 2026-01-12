@@ -1,10 +1,12 @@
 {
-  "name": "mahankals/cakephp-plugin-dynamicconfig",
-  "version": "1.0.0",
-  "description": "Update config from UI instead of changing fron backend & store it into database.",
+  "name": "mahankals/cakephp-plugin-dbconfig",
+  "description": "Store and manage application configuration in database for CakePHP 5.",
   "keywords": [
     "cakephp",
-    "plugin"
+    "plugin",
+    "config",
+    "database",
+    "settings"
   ],
   "type": "cakephp-plugin",
   "license": "MIT",
@@ -20,7 +22,7 @@
   },
   "autoload": {
     "psr-4": {
-      "DynamicConfig\\": "src/"
+      "DbConfig\\": "src/"
     }
   },
   "extra": {

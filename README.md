@@ -1,100 +1,93 @@
-# DynamicConfig
+# DbConfig for CakePHP 5
 
+[![CakePHP 5](https://img.shields.io/badge/CakePHP-5.x-red.svg)](https://cakephp.org)
+[![PHP 8.1+](https://img.shields.io/badge/PHP-8.1%2B-blue.svg)](https://php.net)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Latest Version](https://img.shields.io/github/v/tag/mahankals/cakephp-plugin-dynamicconfig?label=Git%20Latest)](https://github.com/mahankals/cakephp-plugin-dynamicconfig)
-[![Stable Version](https://img.shields.io/github/v/release/mahankals/cakephp-plugin-dynamicconfig?label=Git%20Stable&sort=semver)](https://github.com/mahankals/cakephp-plugin-dynamicconfig/releases)
-[![Total Downloads](https://img.shields.io/github/downloads/mahankals/cakephp-plugin-dynamicconfig/total?label=Git%20Downloads)](https://github.com/mahankals/cakephp-plugin-dynamicconfig/releases)
 
-[![GitHub Stars](https://img.shields.io/github/stars/mahankals/cakephp-plugin-dynamicconfig?style=social)](https://github.com/mahankals/cakephp-plugin-dynamicconfig/stargazers)
-[![GitHub Forks](https://img.shields.io/github/forks/mahankals/cakephp-plugin-dynamicconfig?style=social)](https://github.com/mahankals/cakephp-plugin-dynamicconfig/network/members)
-[![GitHub Watchers](https://img.shields.io/github/watchers/mahankals/cakephp-plugin-dynamicconfig?style=social)](https://github.com/mahankals/cakephp-plugin-dynamicconfig/watchers)
-
-
-<!-- packagist details
-[![Latest Stable Version](https://poser.pugx.org/mahankals/cakephp-plugin-dynamicconfig/v/stable)](https://packagist.org/packages/mahankals/cakephp-plugin-dynamicconfig)
-[![Total Downloads](https://poser.pugx.org/mahankals/cakephp-plugin-dynamicconfig/downloads)](https://packagist.org/packages/mahankals/cakephp-plugin-dynamicconfig)
--->
-
-Update config from UI instead of changing fron backend & store it into database.
-
----
+Store and manage application configuration in database for CakePHP 5 applications.
 
 ## Features
 
-- Load & Update configuration from database
+- Store configuration in database
+- Auto-load configuration on bootstrap
+- Type casting (string, int, float, bool, json)
+- CLI command for template publishing
+- Seamless CakePHP Configure integration
+
+## Requirements
+
+| Requirement | Version |
+|-------------|---------|
+| PHP | >= 8.1 |
+| CakePHP | ^5.0 |
+
+**No additional dependencies required.**
 
 ## Installation
 
-You can install this plugin directly from GitHub using Composer:
+1. Add the repository to your `composer.json`:
 
-1. Add the GitHub repository to your app's `composer.json`:
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/CakePHPMitra/dbconfig"
+        }
+    ]
+}
+```
 
-   ```json
-   "repositories": [
-       {
-           "type": "vcs",
-           "url": "https://github.com/mahankals/cakephp-plugin-dynamicconfig"
-       }
-   ],
-   ```
-
-1. Require the plugin via Composer:
-
-   ```bash
-   composer require mahankals/cakephp-plugin-dynamicconfig:dev-main
-   ```
-
-1. Load the plugin
-
-   **Method 1: from terminal**
-
-   ```bash
-   bin/cake plugin load DynamicConfig
-   ```
-
-   **Method 2: load in `Application.php`, bootstrap method**
-
-   ```bash
-   $this->addPlugin('DynamicConfig');
-   ```
-
-## Create tables with migration
-
+2. Install via Composer:
 
 ```bash
- bin/cake migrations migrate --plugin DynamicConfig
- ```
-
-## Update config value
-
-You can update config value from [http://localhost:8765/configuration](http://localhost:8765/configuration) url.
-
-## Debug Config (optional)
-
-in any template file
-
-```html
-<div><b>TimeZone: </b><?= \Cake\Core\Configure::read('App.defaultTimezone') ?></div>
-<div><b>Current Time: </b><?= \Cake\I18n\DateTime::now(); ?></div>
+composer require cakephpmitra/dbconfig:dev-main
 ```
-**Note:** Update `App.defaultTimezone` & check Current Time.
 
-## Customization (optional)
-
-You can publish templates for customization:
+3. Load the plugin:
 
 ```bash
-bin/cake dynamicconfig publish
+bin/cake plugin load DbConfig
 ```
+
+Or add to `src/Application.php` in the `bootstrap()` method:
+
+```php
+$this->addPlugin('DbConfig');
+```
+
+4. Run migrations:
+
+```bash
+bin/cake migrations migrate --plugin DbConfig
+```
+
+## How It Works
+
+1. **Bootstrap**: Configuration loads automatically from database on application start
+2. **Storage**: Settings stored in `app_settings` table with type information
+3. **Access**: Use standard `Configure::read()` to access values
+4. **Dashboard**: Web interface at `/db-config` for management
+
+## Documentation
+
+See the [docs](docs/) folder for detailed documentation:
+
+- [Features](docs/features/) - Feature documentation
+- [Development](docs/development/) - Implementation details
 
 ## Contributing
 
-Contributions, issues, and feature requests are welcome!
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Issues
+
+Report bugs and feature requests on the [Issue Tracker](https://github.com/CakePHPMitra/dbconfig/issues).
 
 ## Author
 
-[Atul Devichand Mahankal](https://atulmahankal.github.io/atulmahankal/)
+[Atul Mahankal](https://atulmahankal.github.io/atulmahankal/)
 
 ## License
 
-This library is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+MIT License - see [LICENSE](LICENSE) file.

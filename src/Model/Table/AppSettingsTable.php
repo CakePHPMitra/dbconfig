@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DynamicConfig\Model\Table;
+namespace DbConfig\Model\Table;
 
 use ArrayObject;
 use Cake\ORM\Table;
@@ -10,25 +10,25 @@ use Cake\ORM\RulesChecker;
 use Cake\Event\EventInterface;
 use Cake\Validation\Validator;
 use Cake\ORM\Query\SelectQuery;
-use DynamicConfig\Service\ConfigService;
+use DbConfig\Service\ConfigService;
 use Cake\Log\Log;
 
 /**
  * AppSettings Model
  *
- * @method \DynamicConfig\Model\Entity\AppSetting newEmptyEntity()
- * @method \DynamicConfig\Model\Entity\AppSetting newEntity(array $data, array $options = [])
- * @method array<\DynamicConfig\Model\Entity\AppSetting> newEntities(array $data, array $options = [])
- * @method \DynamicConfig\Model\Entity\AppSetting get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
- * @method \DynamicConfig\Model\Entity\AppSetting findOrCreate($search, ?callable $callback = null, array $options = [])
- * @method \DynamicConfig\Model\Entity\AppSetting patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
- * @method array<\DynamicConfig\Model\Entity\AppSetting> patchEntities(iterable $entities, array $data, array $options = [])
- * @method \DynamicConfig\Model\Entity\AppSetting|false save(\Cake\Datasource\EntityInterface $entity, array $options = [])
- * @method \DynamicConfig\Model\Entity\AppSetting saveOrFail(\Cake\Datasource\EntityInterface $entity, array $options = [])
- * @method iterable<\DynamicConfig\Model\Entity\AppSetting>|\Cake\Datasource\ResultSetInterface<\DynamicConfig\Model\Entity\AppSetting>|false saveMany(iterable $entities, array $options = [])
- * @method iterable<\DynamicConfig\Model\Entity\AppSetting>|\Cake\Datasource\ResultSetInterface<\DynamicConfig\Model\Entity\AppSetting> saveManyOrFail(iterable $entities, array $options = [])
- * @method iterable<\DynamicConfig\Model\Entity\AppSetting>|\Cake\Datasource\ResultSetInterface<\DynamicConfig\Model\Entity\AppSetting>|false deleteMany(iterable $entities, array $options = [])
- * @method iterable<\DynamicConfig\Model\Entity\AppSetting>|\Cake\Datasource\ResultSetInterface<\DynamicConfig\Model\Entity\AppSetting> deleteManyOrFail(iterable $entities, array $options = [])
+ * @method \DbConfig\Model\Entity\AppSetting newEmptyEntity()
+ * @method \DbConfig\Model\Entity\AppSetting newEntity(array $data, array $options = [])
+ * @method array<\DbConfig\Model\Entity\AppSetting> newEntities(array $data, array $options = [])
+ * @method \DbConfig\Model\Entity\AppSetting get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
+ * @method \DbConfig\Model\Entity\AppSetting findOrCreate($search, ?callable $callback = null, array $options = [])
+ * @method \DbConfig\Model\Entity\AppSetting patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
+ * @method array<\DbConfig\Model\Entity\AppSetting> patchEntities(iterable $entities, array $data, array $options = [])
+ * @method \DbConfig\Model\Entity\AppSetting|false save(\Cake\Datasource\EntityInterface $entity, array $options = [])
+ * @method \DbConfig\Model\Entity\AppSetting saveOrFail(\Cake\Datasource\EntityInterface $entity, array $options = [])
+ * @method iterable<\DbConfig\Model\Entity\AppSetting>|\Cake\Datasource\ResultSetInterface<\DbConfig\Model\Entity\AppSetting>|false saveMany(iterable $entities, array $options = [])
+ * @method iterable<\DbConfig\Model\Entity\AppSetting>|\Cake\Datasource\ResultSetInterface<\DbConfig\Model\Entity\AppSetting> saveManyOrFail(iterable $entities, array $options = [])
+ * @method iterable<\DbConfig\Model\Entity\AppSetting>|\Cake\Datasource\ResultSetInterface<\DbConfig\Model\Entity\AppSetting>|false deleteMany(iterable $entities, array $options = [])
+ * @method iterable<\DbConfig\Model\Entity\AppSetting>|\Cake\Datasource\ResultSetInterface<\DbConfig\Model\Entity\AppSetting> deleteManyOrFail(iterable $entities, array $options = [])
  */
 class AppSettingsTable extends Table
 {

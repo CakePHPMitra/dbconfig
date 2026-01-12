@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-namespace DynamicConfig\Controller;
+namespace DbConfig\Controller;
 
-use DynamicConfig\Controller\AppController;
-use Cake\Http\Exception\ForbiddenException;
+use DbConfig\Controller\AppController;
 
 /**
  * AppSettings Controller
  *
- * @property \DynamicConfig\Model\Table\AppSettingsTable $AppSettings
+ * @property \DbConfig\Model\Table\AppSettingsTable $AppSettings
  */
 class AppSettingsController extends AppController
 {

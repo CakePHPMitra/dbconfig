@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace DynamicConfig\Controller;
+namespace DbConfig\Controller;
 
-use App\Controller\AppController as BaseController;
+use Cake\Controller\Controller;
 
-class AppController extends BaseController
+class AppController extends Controller
 {
 }

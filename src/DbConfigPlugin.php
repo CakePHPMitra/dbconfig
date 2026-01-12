@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DynamicConfig;
+namespace DbConfig;
 
 use Cake\Console\CommandCollection;
 use Cake\Core\BasePlugin;
@@ -12,9 +12,9 @@ use Cake\Http\MiddlewareQueue;
 use Cake\Routing\RouteBuilder;
 
 /**
- * Plugin for DynamicConfig
+ * Plugin for DbConfig
  */
-class DynamicConfigPlugin extends BasePlugin
+class DbConfigPlugin extends BasePlugin
 {
     /**
      * Load all the plugin configuration and bootstrap logic.
@@ -31,9 +31,9 @@ class DynamicConfigPlugin extends BasePlugin
 
         // Load configuration from database
         try {
-            \DynamicConfig\Service\ConfigService::reload();
+            \DbConfig\Service\ConfigService::reload();
         } catch (\Exception $e) {
-            \Cake\Log\Log::warning('[DynamicConfig] Failed to load configuration: ' . $e->getMessage());
+            \Cake\Log\Log::warning('[DbConfig] Failed to load configuration: ' . $e->getMessage());
         }
     }
 
@@ -48,17 +48,12 @@ class DynamicConfigPlugin extends BasePlugin
      */
     public function routes(RouteBuilder $routes): void
     {
-        // remove this method hook if you don't need it
         $routes->plugin(
-            'DynamicConfig',
-            ['path' => '/'],
+            'DbConfig',
+            ['path' => '/db-config'],
             function (RouteBuilder $builder) {
-                // You can still include fallbacks if needed
-                // $builder->fallbacks();
-
-                // Fixed route for AppSettingsController::index
                 $builder->connect(
-                    'configuration',
+                    '/',
                     ['controller' => 'AppSettings', 'action' => 'index']
                 );
             }
@@ -74,9 +69,6 @@ class DynamicConfigPlugin extends BasePlugin
      */
     public function middleware(MiddlewareQueue $middlewareQueue): MiddlewareQueue
     {
-        // Add your middlewares here
-        // remove this method hook if you don't need it
-
         return $middlewareQueue;
     }
 
@@ -88,9 +80,6 @@ class DynamicConfigPlugin extends BasePlugin
      */
     public function console(CommandCollection $commands): CommandCollection
     {
-        // Add your commands here
-        // remove this method hook if you don't need it
-
         $commands = parent::console($commands);
 
         return $commands;
@@ -105,7 +94,5 @@ class DynamicConfigPlugin extends BasePlugin
      */
     public function services(ContainerInterface $container): void
     {
-        // Add your services here
-        // remove this method hook if you don't need it
     }
 }
