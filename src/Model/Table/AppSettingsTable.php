@@ -59,7 +59,13 @@ class AppSettingsTable extends Table
             ->scalar('config_key')
             ->maxLength('config_key', 255)
             ->requirePresence('config_key', 'create')
-            ->notEmptyString('config_key');
+            ->notEmptyString('config_key')
+            ->add('config_key', 'allowedKey', [
+                'rule' => function ($value) {
+                    return ConfigService::isKeyAllowed($value);
+                },
+                'message' => 'This configuration key is not allowed to be modified via database settings.',
+            ]);
 
         $validator
             ->scalar('value')
@@ -73,6 +79,23 @@ class AppSettingsTable extends Table
             ->notEmptyString('type');
 
         return $validator;
+    }
+
+    /**
+     * SECURITY: Prevent saving blocked config keys even if validation is bypassed
+     *
+     * @param \Cake\Event\EventInterface $event Event
+     * @param \DbConfig\Model\Entity\AppSetting $entity Entity
+     * @param \ArrayObject $options Options
+     * @return bool
+     */
+    public function beforeSave(EventInterface $event, $entity, ArrayObject $options): bool
+    {
+        if (!ConfigService::isKeyAllowed($entity->config_key)) {
+            Log::warning("Attempted to save blocked config key: {$entity->config_key}");
+            return false;
+        }
+        return true;
     }
 
     public function afterSave(EventInterface $event, $entity, ArrayObject $options): void

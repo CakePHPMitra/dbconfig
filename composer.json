@@ -1,5 +1,5 @@
 {
-  "name": "mahankals/cakephp-plugin-dbconfig",
+  "name": "CakePHPMitra/dbconfig",
   "description": "Store and manage application configuration in database for CakePHP 5.",
   "keywords": [
     "cakephp",

@@ -10,12 +10,97 @@ use Cake\Routing\Router;
 
 class ConfigService
 {
+    /**
+     * SECURITY: Config keys that cannot be modified via database settings.
+     * These are security-sensitive configurations that should only be set via environment/.env
+     *
+     * @var array<string>
+     */
+    protected static array $blockedKeyPrefixes = [
+        'Security.',           // Security salt, encryption keys
+        'Datasources.',        // Database credentials
+        'EmailTransport.default.password',  // SMTP password
+        'EmailTransport.default.username',  // SMTP username (can contain secrets)
+        'debug',               // Debug mode
+        'Error.',              // Error handling config
+        'Session.',            // Session configuration
+    ];
+
+    /**
+     * SECURITY: Allowed config key prefixes (allowlist approach).
+     * Only keys starting with these prefixes can be stored in database.
+     *
+     * @var array<string>
+     */
+    protected static array $allowedKeyPrefixes = [
+        'App.',
+        'Mail.',
+        'EmailTransport.default.host',
+        'EmailTransport.default.port',
+        'EmailTransport.default.tls',
+        'EmailTransport.default.timeout',
+        'Cache.',
+        'Log.',
+        'Asset.',
+        'Custom.',
+    ];
+
+    /**
+     * Check if a config key is allowed to be stored/modified via database.
+     *
+     * @param string $key Config key to validate
+     * @return bool True if allowed, false if blocked
+     */
+    public static function isKeyAllowed(string $key): bool
+    {
+        // Check blocklist first (explicit deny)
+        foreach (static::$blockedKeyPrefixes as $blocked) {
+            if (str_starts_with($key, $blocked) || $key === $blocked) {
+                return false;
+            }
+        }
+
+        // Check allowlist (explicit allow)
+        foreach (static::$allowedKeyPrefixes as $allowed) {
+            if (str_starts_with($key, $allowed)) {
+                return true;
+            }
+        }
+
+        // Default deny for unlisted keys
+        return false;
+    }
+
+    /**
+     * Get list of blocked key prefixes (for documentation/UI)
+     *
+     * @return array<string>
+     */
+    public static function getBlockedKeyPrefixes(): array
+    {
+        return static::$blockedKeyPrefixes;
+    }
+
+    /**
+     * Get list of allowed key prefixes (for documentation/UI)
+     *
+     * @return array<string>
+     */
+    public static function getAllowedKeyPrefixes(): array
+    {
+        return static::$allowedKeyPrefixes;
+    }
+
     public static function reload(): void
     {
         $AppSettings = TableRegistry::getTableLocator()->get('DbConfig.AppSettings');
         $settings = $AppSettings->find()->select(['config_key', 'value', 'type'])->all();
 
         foreach ($settings as $setting) {
+            // SECURITY: Skip blocked keys that may have been inserted manually
+            if (!static::isKeyAllowed($setting->config_key)) {
+                continue;
+            }
             Configure::write($setting->config_key, self::castValue($setting->value, $setting->type));
         }
 

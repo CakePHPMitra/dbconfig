@@ -1,14 +1,20 @@
 <?php
-
-use Cake\Core\Configure;
-
 /**
  * @var \App\View\AppView $this
- * @var iterable<\Cake\Datasource\EntityInterface> $appSettings
+ * @var iterable<\DbConfig\Model\Entity\AppSetting> $appSettings
+ * @var int|string|null $id
+ * @var bool $canUpdate
  */
 ?>
 <div class="appSettings index content">
-    <h3><?= __('App Settings ') ?></h3>
+    <h3><?= __('App Settings') ?></h3>
+
+    <?php if (!$canUpdate): ?>
+    <div class="alert alert-info" style="padding: 10px; background: #e7f3ff; border: 1px solid #b6d4fe; border-radius: 4px; margin-bottom: 15px;">
+        <?= __('You have read-only access to settings.') ?>
+    </div>
+    <?php endif; ?>
+
     <div class="table-responsive">
         <table>
             <thead>
@@ -24,18 +30,20 @@ use Cake\Core\Configure;
                         <td><?= $this->Number->format($appSetting->id) ?></td>
                         <td><?= h($appSetting->config_key) ?></td>
                         <td>
-                            <?php if ($id == $appSetting->id): ?>
+                            <?php if ($canUpdate && $id == $appSetting->id): ?>
                                 <?= $this->Form->create($appSetting) ?>
                                 <?= $this->Form->control('value', ['label' => false]) ?>
                                 <?= $this->Form->button(__('Submit')) ?>
                                 <?= $this->Html->link(__('Cancel'), [
                                     'controller' => $this->request->getParam('controller'),
-                                    'action' => $this->request->getParam('action')
+                                    'action' => $this->request->getParam('action'),
                                 ], ['class' => 'button secondary']) ?>
                                 <?= $this->Form->end() ?>
                             <?php else: ?>
                                 <?= h($appSetting->value) ?>
-                                <?= $this->Html->link(__('Edit'), ['?' => ['id' => $appSetting->id]], ['class' => 'float-right']) ?>
+                                <?php if ($canUpdate): ?>
+                                    <?= $this->Html->link(__('Edit'), ['?' => ['id' => $appSetting->id]], ['class' => 'float-right']) ?>
+                                <?php endif; ?>
                             <?php endif; ?>
                         </td>
                     </tr>

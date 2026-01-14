@@ -6,10 +6,12 @@ namespace DbConfig;
 
 use Cake\Console\CommandCollection;
 use Cake\Core\BasePlugin;
+use Cake\Core\Configure;
 use Cake\Core\ContainerInterface;
 use Cake\Core\PluginApplicationInterface;
 use Cake\Http\MiddlewareQueue;
 use Cake\Routing\RouteBuilder;
+use Cake\Utility\Hash;
 
 /**
  * Plugin for DbConfig
@@ -29,11 +31,35 @@ class DbConfigPlugin extends BasePlugin
     {
         parent::bootstrap($app);
 
+        // Load plugin configuration defaults
+        $this->loadDefaultConfig();
+
         // Load configuration from database
         try {
             \DbConfig\Service\ConfigService::reload();
         } catch (\Exception $e) {
             \Cake\Log\Log::warning('[DbConfig] Failed to load configuration: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Load default configuration for the plugin
+     *
+     * Plugin defaults are merged with any existing configuration,
+     * allowing the host application to override settings.
+     *
+     * @return void
+     */
+    protected function loadDefaultConfig(): void
+    {
+        $configFile = dirname(__DIR__) . '/config/dbconfig.php';
+
+        if (file_exists($configFile)) {
+            $defaults = require $configFile;
+
+            // Merge with any existing configuration (app can override)
+            $current = Configure::read('DbConfig') ?? [];
+            Configure::write('DbConfig', Hash::merge($defaults['DbConfig'] ?? [], $current));
         }
     }
 

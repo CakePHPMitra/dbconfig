@@ -42,7 +42,8 @@ class CreateAppSettings extends BaseMigration
         ]);
         $table->create();
 
-        // Add default mail configuration
+        // Add default configuration (safe defaults only - no credentials)
+        // SECURITY: Sensitive values like passwords should be configured via .env or admin UI
         $this->execute("
             INSERT INTO app_settings (module, config_key, value, type)
             VALUES
@@ -50,9 +51,10 @@ class CreateAppSettings extends BaseMigration
             ('App', 'Mail.default.from', 'no-reply@example.com', 'string'),
             ('App', 'EmailTransport.default.host', 'localhost', 'string'),
             ('App', 'EmailTransport.default.port', '25', 'integer'),
-            ('App', 'EmailTransport.default.username', 'user', 'string'),
-            ('App', 'EmailTransport.default.password', 'secret', 'string'),
             ('App', 'EmailTransport.default.tls', '1', 'boolean')
         ");
+        // NOTE: EmailTransport credentials (username/password) should be set via:
+        // 1. Environment variables (recommended for production)
+        // 2. Admin settings UI after deployment
     }
 }
