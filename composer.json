@@ -25,6 +25,11 @@
       "DbConfig\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "DbConfig\\Test\\": "tests/"
+    }
+  },
   "extra": {
       "cakephp-plugin": true
   },
