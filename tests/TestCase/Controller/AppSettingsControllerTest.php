@@ -22,7 +22,7 @@ class AppSettingsControllerTest extends TestCase
      * @var array<string>
      */
     protected array $fixtures = [
-        'plugin.DbConfig.AppSettings',
+        'DbConfig.AppSettings',
     ];
 
     /**
