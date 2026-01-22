@@ -7,4 +7,15 @@ use Cake\Controller\Controller;
 
 class AppController extends Controller
 {
+    /**
+     * Initialize controller
+     *
+     * @return void
+     */
+    public function initialize(): void
+    {
+        parent::initialize();
+
+        $this->loadComponent('Flash');
+    }
 }
