@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace DbConfig\Service;
 
 use Cake\Core\Configure;
+use Cake\Log\Log;
 use Cake\ORM\TableRegistry;
 use Cake\Routing\Router;
+use Cake\Utility\Security;
 
 class ConfigService
 {
@@ -91,6 +93,73 @@ class ConfigService
         return static::$allowedKeyPrefixes;
     }
 
+    /**
+     * Get the encryption key for encrypting/decrypting sensitive values.
+     *
+     * Reads `Settings.encryptionKey` from Configure. This key is required
+     * and must be set in the host application's configuration.
+     *
+     * @return string The encryption key
+     * @throws \RuntimeException If Settings.encryptionKey is not configured or empty
+     */
+    public static function getEncryptionKey(): string
+    {
+        $key = Configure::read('Settings.encryptionKey');
+
+        if ($key !== null && $key !== '') {
+            return (string)$key;
+        }
+
+        throw new \RuntimeException(
+            'Settings.encryptionKey is not configured. '
+            . 'Add it to your config/app_local.php: '
+            . "'Settings' => ['encryptionKey' => env('SETTINGS_ENCRYPTION_KEY', '')]"
+        );
+    }
+
+    /**
+     * Encrypt a plaintext value for database storage.
+     *
+     * Uses `Security::encrypt()` with base64 encoding for safe storage in TEXT columns.
+     *
+     * @param string $value Plaintext value to encrypt
+     * @return string Base64-encoded encrypted value
+     */
+    public static function encryptValue(string $value): string
+    {
+        $encrypted = Security::encrypt($value, static::getEncryptionKey());
+
+        return base64_encode($encrypted);
+    }
+
+    /**
+     * Decrypt an encrypted value from database storage.
+     *
+     * Returns null on failure (wrong key, corrupted data) rather than throwing.
+     *
+     * @param string $encryptedValue Base64-encoded encrypted value
+     * @return string|null Decrypted plaintext, or null on failure
+     */
+    public static function decryptValue(string $encryptedValue): ?string
+    {
+        if ($encryptedValue === '') {
+            return null;
+        }
+
+        $decoded = base64_decode($encryptedValue, true);
+        if ($decoded === false) {
+            return null;
+        }
+
+        try {
+            $decrypted = Security::decrypt($decoded, static::getEncryptionKey());
+        } catch (\Exception $e) {
+            return null;
+        }
+
+        return $decrypted;
+    }
+
     public static function reload(): void
     {
         $AppSettings = TableRegistry::getTableLocator()->get('DbConfig.AppSettings');
@@ -101,7 +170,23 @@ class ConfigService
             if (!static::isKeyAllowed($setting->config_key)) {
                 continue;
             }
-            Configure::write($setting->config_key, self::castValue($setting->value, $setting->type));
+
+            $value = $setting->value;
+
+            // Decrypt encrypted values before writing to Configure
+            if (strtolower($setting->type) === 'encrypted') {
+                $decrypted = static::decryptValue($value);
+                if ($decrypted === null) {
+                    Log::warning(
+                        "[DbConfig] Failed to decrypt setting '{$setting->config_key}'. "
+                        . 'Skipping. Check encryption key configuration.'
+                    );
+                    continue;
+                }
+                $value = $decrypted;
+            }
+
+            Configure::write($setting->config_key, self::castValue($value, $setting->type));
         }
 
         static::apply();
@@ -114,6 +199,7 @@ class ConfigService
             'float' => (float)$value,
             'bool', 'boolean' => filter_var($value, FILTER_VALIDATE_BOOLEAN),
             'json' => json_decode($value, true),
+            'encrypted' => $value, // Already decrypted by reload(), treat as string
             default => $value,
         };
     }

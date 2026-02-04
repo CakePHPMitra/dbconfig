@@ -52,7 +52,19 @@ class AppSettingsController extends AppController
             }
 
             $appSetting = $this->AppSettings->get($id, contain: []);
-            $appSetting = $this->AppSettings->patchEntity($appSetting, $this->request->getData());
+            $data = $this->request->getData();
+
+            // For encrypted settings, empty value means "keep existing"
+            if (
+                strtolower($appSetting->type) === 'encrypted'
+                && (!isset($data['value']) || $data['value'] === '')
+            ) {
+                $this->Flash->info(__('No changes made. Value was empty.'));
+
+                return $this->redirect(['action' => 'index']);
+            }
+
+            $appSetting = $this->AppSettings->patchEntity($appSetting, $data);
 
             if ($this->AppSettings->save($appSetting)) {
                 $this->Flash->success(__('The app setting has been saved.'));

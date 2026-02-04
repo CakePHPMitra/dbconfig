@@ -10,6 +10,28 @@ declare(strict_types=1);
 return [
     'DbConfig' => [
         /**
+         * Encryption Configuration
+         *
+         * The plugin uses `Settings.encryptionKey` for encrypting/decrypting
+         * values with type 'encrypted'. This is a shared app-level config key
+         * that any plugin or service can reuse.
+         *
+         * Set in your host application's config/app_local.php:
+         *
+         *   'Settings' => [
+         *       'encryptionKey' => env('SETTINGS_ENCRYPTION_KEY', ''),
+         *   ],
+         *
+         * Generate a key: openssl rand -base64 48
+         *
+         * Required. The application will throw a RuntimeException if this key
+         * is not set when encrypting or decrypting values.
+         *
+         * WARNING: If you lose this key, all encrypted values become unreadable.
+         * Always backup your encryption key in a secure location.
+         */
+
+        /**
          * Permission settings for the DbConfig plugin
          */
         'permissions' => [

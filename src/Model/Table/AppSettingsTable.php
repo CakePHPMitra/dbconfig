@@ -70,7 +70,14 @@ class AppSettingsTable extends Table
         $validator
             ->scalar('value')
             ->requirePresence('value', 'create')
-            ->notEmptyString('value');
+            ->allowEmptyString('value', 'Leave empty to keep existing value.', function ($context) {
+                // Allow empty value only on update for encrypted type
+                if (!empty($context['data']['type']) && strtolower($context['data']['type']) === 'encrypted') {
+                    return !$context['newRecord'];
+                }
+
+                return false;
+            });
 
         $validator
             ->scalar('type')
@@ -89,13 +96,20 @@ class AppSettingsTable extends Table
      * @param \ArrayObject $options Options
      * @return bool
      */
-    public function beforeSave(EventInterface $event, $entity, ArrayObject $options): bool
+    public function beforeSave(EventInterface $event, $entity, ArrayObject $options): void
     {
         if (!ConfigService::isKeyAllowed($entity->config_key)) {
             Log::warning("Attempted to save blocked config key: {$entity->config_key}");
-            return false;
+            $event->setResult(false);
+            $event->stopPropagation();
+
+            return;
         }
-        return true;
+
+        // Auto-encrypt values when type is 'encrypted'
+        if (strtolower($entity->type) === 'encrypted' && $entity->isDirty('value')) {
+            $entity->value = ConfigService::encryptValue($entity->value);
+        }
     }
 
     public function afterSave(EventInterface $event, $entity, ArrayObject $options): void

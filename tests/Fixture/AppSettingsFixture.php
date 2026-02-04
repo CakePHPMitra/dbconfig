@@ -46,6 +46,13 @@ class AppSettingsFixture extends TestFixture
                 'value' => '3600',
                 'type' => 'integer',
             ],
+            [
+                'id' => 4,
+                'module' => 'Custom',
+                'config_key' => 'Custom.api_secret',
+                'value' => '',
+                'type' => 'encrypted',
+            ],
         ];
         parent::init();
     }

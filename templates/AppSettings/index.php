@@ -32,7 +32,16 @@
                         <td>
                             <?php if ($canUpdate && $id == $appSetting->id): ?>
                                 <?= $this->Form->create($appSetting) ?>
-                                <?= $this->Form->control('value', ['label' => false]) ?>
+                                <?php if (strtolower($appSetting->type) === 'encrypted'): ?>
+                                    <?= $this->Form->control('value', [
+                                        'label' => false,
+                                        'type' => 'password',
+                                        'value' => '',
+                                        'placeholder' => __('Enter new value or leave empty to keep existing'),
+                                    ]) ?>
+                                <?php else: ?>
+                                    <?= $this->Form->control('value', ['label' => false]) ?>
+                                <?php endif; ?>
                                 <?= $this->Form->button(__('Submit')) ?>
                                 <?= $this->Html->link(__('Cancel'), [
                                     'controller' => $this->request->getParam('controller'),
@@ -40,7 +49,11 @@
                                 ], ['class' => 'button secondary']) ?>
                                 <?= $this->Form->end() ?>
                             <?php else: ?>
-                                <?= h($appSetting->value) ?>
+                                <?php if (strtolower($appSetting->type) === 'encrypted'): ?>
+                                    <span class="encrypted-value" title="<?= __('Encrypted value') ?>">********</span>
+                                <?php else: ?>
+                                    <?= h($appSetting->value) ?>
+                                <?php endif; ?>
                                 <?php if ($canUpdate): ?>
                                     <?= $this->Html->link(__('Edit'), ['?' => ['id' => $appSetting->id]], ['class' => 'float-right']) ?>
                                 <?php endif; ?>

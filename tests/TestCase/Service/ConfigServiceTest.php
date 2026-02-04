@@ -3,7 +3,10 @@ declare(strict_types=1);
 
 namespace DbConfig\Test\TestCase\Service;
 
+use Cake\Core\Configure;
+use Cake\ORM\TableRegistry;
 use Cake\TestSuite\TestCase;
+use Cake\Utility\Security;
 use DbConfig\Service\ConfigService;
 
 /**
@@ -13,6 +16,37 @@ use DbConfig\Service\ConfigService;
  */
 class ConfigServiceTest extends TestCase
 {
+    /**
+     * Fixtures
+     *
+     * @var array<string>
+     */
+    protected array $fixtures = [
+        'plugin.DbConfig.AppSettings',
+    ];
+
+    /**
+     * @var string|null
+     */
+    private ?string $originalEncryptionKey = null;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->originalEncryptionKey = Configure::read('Settings.encryptionKey');
+    }
+
+    public function tearDown(): void
+    {
+        // Restore original encryption key
+        if ($this->originalEncryptionKey !== null) {
+            Configure::write('Settings.encryptionKey', $this->originalEncryptionKey);
+        } else {
+            Configure::delete('Settings.encryptionKey');
+        }
+        parent::tearDown();
+    }
+
     /**
      * Test that security-sensitive keys are blocked
      *
@@ -141,5 +175,159 @@ class ConfigServiceTest extends TestCase
         // String (default)
         $this->assertSame('hello', ConfigService::castValue('hello', 'string'));
         $this->assertSame('hello', ConfigService::castValue('hello', 'unknown'));
+    }
+
+    /**
+     * Test getEncryptionKey reads from Configure
+     *
+     * @return void
+     */
+    public function testGetEncryptionKeyReadsFromConfigure(): void
+    {
+        $customKey = str_repeat('x', 64);
+        Configure::write('Settings.encryptionKey', $customKey);
+
+        $this->assertSame($customKey, ConfigService::getEncryptionKey());
+    }
+
+    /**
+     * Test getEncryptionKey throws when not set
+     *
+     * @return void
+     */
+    public function testGetEncryptionKeyThrowsWhenNotSet(): void
+    {
+        Configure::delete('Settings.encryptionKey');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Settings.encryptionKey is not configured');
+        ConfigService::getEncryptionKey();
+    }
+
+    /**
+     * Test getEncryptionKey throws when empty string
+     *
+     * @return void
+     */
+    public function testGetEncryptionKeyThrowsOnEmptyString(): void
+    {
+        Configure::write('Settings.encryptionKey', '');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Settings.encryptionKey is not configured');
+        ConfigService::getEncryptionKey();
+    }
+
+    /**
+     * Test encrypt/decrypt round-trip
+     *
+     * @return void
+     */
+    public function testEncryptDecryptRoundTrip(): void
+    {
+        $plaintext = 'my-secret-api-key-12345';
+
+        $encrypted = ConfigService::encryptValue($plaintext);
+
+        // Encrypted value should be different from plaintext
+        $this->assertNotSame($plaintext, $encrypted);
+
+        // Should be valid base64
+        $this->assertNotFalse(base64_decode($encrypted, true));
+
+        // Decrypt should return original plaintext
+        $decrypted = ConfigService::decryptValue($encrypted);
+        $this->assertSame($plaintext, $decrypted);
+    }
+
+    /**
+     * Test encrypt produces different output each time (due to IV)
+     *
+     * @return void
+     */
+    public function testEncryptProducesDifferentOutput(): void
+    {
+        $plaintext = 'same-value';
+
+        $encrypted1 = ConfigService::encryptValue($plaintext);
+        $encrypted2 = ConfigService::encryptValue($plaintext);
+
+        $this->assertNotSame($encrypted1, $encrypted2);
+
+        // Both should decrypt to the same value
+        $this->assertSame($plaintext, ConfigService::decryptValue($encrypted1));
+        $this->assertSame($plaintext, ConfigService::decryptValue($encrypted2));
+    }
+
+    /**
+     * Test decryptValue returns null for invalid data
+     *
+     * @return void
+     */
+    public function testDecryptValueReturnsNullForInvalidData(): void
+    {
+        $this->assertNull(ConfigService::decryptValue(''));
+        $this->assertNull(ConfigService::decryptValue('not-valid-base64!!!'));
+        $this->assertNull(ConfigService::decryptValue(base64_encode('garbage-data')));
+    }
+
+    /**
+     * Test decryptValue returns null when key has changed
+     *
+     * @return void
+     */
+    public function testDecryptValueReturnsNullForWrongKey(): void
+    {
+        // Encrypt with current key
+        $plaintext = 'secret-value';
+        $encrypted = ConfigService::encryptValue($plaintext);
+
+        // Change the key
+        Configure::write('Settings.encryptionKey', str_repeat('z', 64));
+
+        // Decrypt should fail gracefully
+        $this->assertNull(ConfigService::decryptValue($encrypted));
+    }
+
+    /**
+     * Test castValue for encrypted type returns value as-is
+     *
+     * @return void
+     */
+    public function testCastValueEncryptedReturnsAsIs(): void
+    {
+        $this->assertSame('already-decrypted', ConfigService::castValue('already-decrypted', 'encrypted'));
+    }
+
+    /**
+     * Test reload decrypts encrypted values into Configure
+     *
+     * @return void
+     */
+    public function testReloadDecryptsEncryptedValues(): void
+    {
+        $table = TableRegistry::getTableLocator()->get('DbConfig.AppSettings');
+
+        // Insert an encrypted value via direct save (beforeSave will encrypt it)
+        $plaintext = 'my-api-key-value';
+        $entity = $table->newEntity([
+            'module' => 'Custom',
+            'config_key' => 'Custom.test_secret',
+            'value' => $plaintext,
+            'type' => 'encrypted',
+        ]);
+        $saved = $table->save($entity);
+        $this->assertNotFalse($saved);
+
+        // Verify stored value is encrypted (not plaintext)
+        $stored = $table->get($saved->id);
+        $this->assertNotSame($plaintext, $stored->value);
+
+        // Clear Configure to ensure reload populates it
+        Configure::delete('Custom.test_secret');
+
+        // Reload should decrypt and write plaintext to Configure
+        ConfigService::reload();
+        $this->assertSame($plaintext, Configure::read('Custom.test_secret'));
     }
 }

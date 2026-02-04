@@ -10,6 +10,7 @@ use Cake\Core\Configure;
 use Cake\Core\ContainerInterface;
 use Cake\Core\PluginApplicationInterface;
 use Cake\Http\MiddlewareQueue;
+use Cake\Routing\Route\DashedRoute;
 use Cake\Routing\RouteBuilder;
 use Cake\Utility\Hash;
 
@@ -82,6 +83,7 @@ class DbConfigPlugin extends BasePlugin
                     '/',
                     ['controller' => 'AppSettings', 'action' => 'index']
                 );
+                $builder->fallbacks(DashedRoute::class);
             }
         );
         parent::routes($routes);
